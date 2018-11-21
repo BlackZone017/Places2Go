@@ -2,6 +2,8 @@ package com.example.olive.proyecto;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,6 +12,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -21,6 +27,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.io.IOError;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -35,13 +46,63 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FusedLocationProviderClient client;
     private static final float ZOOM = 15f;
 
+    private EditText buscador;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+        buscador=findViewById(R.id.buscador);
 
         getLocationPermission();
+
+    }
+
+    private void init(){
+        Log.d(TAG, "init: Iniciando");
+        buscador.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionID, KeyEvent keyEvent) {
+                if(actionID==EditorInfo.IME_ACTION_SEARCH || actionID == EditorInfo.IME_ACTION_DONE
+                        || keyEvent.getAction()== KeyEvent.ACTION_DOWN
+                        || keyEvent.getAction()==KeyEvent.KEYCODE_ENTER){
+
+                    //execute our method for searching
+                    geoLocate();
+                }
+
+                return false;
+            }
+        });
+    }
+
+    private void geoLocate(){
+        Log.d(TAG, "geoLocate: ubicandooo");
+
+        String searchString = buscador.getText().toString();
+
+        Geocoder geocoder = new Geocoder((MapActivity.this));
+        List<Address> list = new ArrayList<>();
+        try{
+
+            list = geocoder.getFromLocationName(searchString,1);
+
+        }catch (IOException e){
+            Log.e(TAG, "geoLocate: IOException: " + e.getMessage());
+        }
+
+        if (list.size()>0){
+            Address address = list.get(0);
+
+            Log.d(TAG, "geoLocate: Ubicacion encontrada: " + address.toString());
+
+            //Toast.makeText(this,address.toString(), Toast.LENGTH_SHORT).show();
+
+        }
+
+
+
     }
 
     private void getDeviceLocation() {
@@ -99,6 +160,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
             mapa.setMyLocationEnabled(true);
             mapa.getUiSettings().setMyLocationButtonEnabled(false);
+
+            init();
 
         }
     }
