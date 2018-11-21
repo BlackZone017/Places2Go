@@ -30,5 +30,9 @@
         android:text="Button"
         tools:layout_editor_absoluteX="177dp"
         tools:layout_editor_absoluteY="341dp" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Klkgoudi"/>
 
 </android.support.constraint.ConstraintLayout>
