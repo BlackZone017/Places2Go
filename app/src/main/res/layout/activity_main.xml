@@ -24,6 +24,14 @@
         tools:layout_editor_absoluteY="112dp" />
 
     <Button
+        android:id="@+id/button5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Button"
+        tools:layout_editor_absoluteX="28dp"
+        tools:layout_editor_absoluteY="64dp" />
+
+    <Button
         android:id="@+id/button4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
