@@ -24,6 +24,14 @@
         tools:layout_editor_absoluteY="112dp" />
 
     <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Button"
+        tools:layout_editor_absoluteX="198dp"
+        tools:layout_editor_absoluteY="177dp" />
+
+    <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -34,5 +42,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Klkgoudi"/>
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Button"
+        tools:layout_editor_absoluteX="70dp"
+        tools:layout_editor_absoluteY="245dp" />
 
 </android.support.constraint.ConstraintLayout>
