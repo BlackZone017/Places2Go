@@ -13,6 +13,14 @@
         android:text="Ir al Mapa"
         android:id="@+id/btnMapa"/>
 
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:text="Ir al Mapa"
+        />
+
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
