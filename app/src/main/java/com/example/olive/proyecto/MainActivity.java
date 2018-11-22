@@ -7,21 +7,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 public class MainActivity extends AppCompatActivity {
-
-    ListView lista;
-    String[] gustos={"SuperMercados","Cajeros","Gas Stations","Hospitales"};
-    String[] descrip={"Supermercados cercanos a tu posicion","Cajeros cercanos a tu posicion",
-            "Gasolineras cercanas a tu posicion","Hospitales cercanos a tu posicion"};
-    Integer[] images ={R.drawable.mercado,R.drawable.cajero,
-            R.drawable.gasolina,R.drawable.hospital};
-
 
     private static final String TAG = "MainActivity";
 
@@ -36,10 +27,6 @@ public class MainActivity extends AppCompatActivity {
         if (isServicesOK()){
             init();
         }
-
-        lista = findViewById(R.id.lista);
-        FormatoListview listado_gustos = new FormatoListview(this,gustos,descrip,images );
-        lista.setAdapter(listado_gustos);
     }
 
     public void init(){

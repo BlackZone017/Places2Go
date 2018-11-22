@@ -13,8 +13,12 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +29,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -46,7 +51,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FusedLocationProviderClient client;
     private static final float ZOOM = 15f;
 
+    private Button buton;
     private EditText buscador;
+    private ImageView gps;
 
 
     @Override
@@ -54,6 +61,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         buscador=findViewById(R.id.buscador);
+        gps=findViewById(R.id.ic_gps);
+        buton = findViewById(R.id.button);
 
         getLocationPermission();
 
@@ -61,6 +70,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void init(){
         Log.d(TAG, "init: Iniciando");
+        buton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                geoLocate();
+            }
+        });
         buscador.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionID, KeyEvent keyEvent) {
@@ -73,6 +88,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
 
                 return false;
+            }
+        });
+        gps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "Pulsaste el icono de gps");
+                getDeviceLocation();
             }
         });
     }
@@ -96,6 +118,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             Address address = list.get(0);
 
             Log.d(TAG, "geoLocate: Ubicacion encontrada: " + address.toString());
+
+            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), ZOOM,address.getAddressLine(0));
 
             //Toast.makeText(this,address.toString(), Toast.LENGTH_SHORT).show();
 
@@ -121,7 +145,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             Location ubicacion_actual = (Location) task.getResult();
 
                             moveCamera(new LatLng(ubicacion_actual.getLatitude(), ubicacion_actual.getLongitude()),
-                                    ZOOM);
+                                    ZOOM,"Mi ubicacion");
 
                         } else {
                             Log.d(TAG, "onComplete: Ubicacion no encontrada");
@@ -138,10 +162,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    private void moveCamera(LatLng longitud_latitud, float zoom) {
+    private void moveCamera(LatLng longitud_latitud, float zoom, String titulo) {
         Log.d(TAG, "moveCamera: moviendo la camara a latitud: " + longitud_latitud.latitude + ", longitud: " + longitud_latitud.longitude);
         mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(longitud_latitud, zoom));
-
+        if(!titulo.equals("Mi ubicacion")){
+            MarkerOptions opciones = new MarkerOptions()
+                    .position(longitud_latitud)
+                    .title(titulo);
+            mapa.addMarker(opciones);
+        }
+    EsconderTeclado();
     }
 
     @Override
@@ -162,7 +192,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mapa.getUiSettings().setMyLocationButtonEnabled(false);
 
             init();
-
+            EsconderTeclado();
         }
     }
 
@@ -217,5 +247,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }
         }
+    }
+    //MTETODO PARA ESCONDER EL TECLADO MIENTRAS SE MUEVE LA CAMARA
+
+    private void EsconderTeclado(){
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 }
