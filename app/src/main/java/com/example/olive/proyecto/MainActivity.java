@@ -16,11 +16,11 @@ import com.google.android.gms.common.GoogleApiAvailability;
 public class MainActivity extends AppCompatActivity {
 
     ListView lista;
-    String[] gustos={"SuperMercados","Cajeros","Gas Stations","Otros"};
+    String[] gustos={"SuperMercados","Cajeros","Gas Stations","Hospitales"};
     String[] descrip={"Supermercados cercanos a tu posicion","Cajeros cercanos a tu posicion",
-            "Gasolineras cercanas a tu posicion","Otros Servicios cercanos"};
-    //Integer[] images ={R.drawable.gustos_donas,R.drawable.gustos_azul,R.drawable.gustos_programming,R.drawable.gustos_music,
-           // R.drawable.gustos_sport,R.drawable.gustos_otros};
+            "Gasolineras cercanas a tu posicion","Hospitales cercanos a tu posicion"};
+    Integer[] images ={R.drawable.mercado,R.drawable.cajero,
+            R.drawable.gasolina,R.drawable.hospital};
 
 
     private static final String TAG = "MainActivity";
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         lista = findViewById(R.id.lista);
-        FormatoListview listado_gustos = new FormatoListview(this,gustos,descrip,null );
+        FormatoListview listado_gustos = new FormatoListview(this,gustos,descrip,images );
         lista.setAdapter(listado_gustos);
     }
 
