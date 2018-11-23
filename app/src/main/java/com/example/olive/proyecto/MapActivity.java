@@ -41,6 +41,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -73,6 +74,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private Boolean permisoConcedido = false;
     private GoogleMap mapa;
+    private Marker marcador;
     private AutoCompletarLugares completar; //gg
 
     //is for interacting with location using fused location provider.
@@ -82,7 +84,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private Button buton;
     private AutoCompleteTextView buscador;
-    private ImageView gps;
+    private ImageView gps,info;
 
     private PlaceInfo lugar;
 
@@ -93,7 +95,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         buscador=findViewById(R.id.buscador);
         gps=findViewById(R.id.ic_gps);
         buton = findViewById(R.id.button);
-
+        info = findViewById(R.id.info_lugar);
         getLocationPermission();
 
     }
@@ -143,6 +145,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onClick(View view) {
                 Log.d(TAG, "Pulsaste el icono de gps");
                 getDeviceLocation();
+            }
+        });
+        info.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "Metodo onclick: Pulsaste el boton de info");
+                try{
+                    if (marcador.isInfoWindowShown()){
+                        marcador.hideInfoWindow();
+                    }else{
+                        Log.d(TAG, "Informacion del lugar: "+ lugar.toString() );
+                        marcador.showInfoWindow();
+                    }
+                }catch(NullPointerException e){
+                    Log.d(TAG, "NullPointerEception: lanzo una excepcion ---> "+e.getMessage());
+                }
             }
         });
     }
@@ -213,6 +231,34 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     //METODO PARA MOVER LA CAMARA
+    private void moveCamera(LatLng longitud_latitud, float zoom, PlaceInfo placeInfo) {
+        Log.d(TAG, "moveCamera: moviendo la camara a latitud: " + longitud_latitud.latitude + ", longitud: " + longitud_latitud.longitude);
+        mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(longitud_latitud, zoom));
+        mapa.clear();
+
+        if(placeInfo != null){
+            try{
+                String info = "Dirección: "+placeInfo.getDireccion()+"/n"+
+                        "Número de teléfono: "+placeInfo.getTelefono()+"/n"+
+                        "Sitio Web: "+placeInfo.getWeb()+"/n"+
+                        "Price Rating: "+placeInfo.getTipoLugar()+"/n"+
+                        "Dirección: "+placeInfo.getDireccion()+"/n";
+
+                MarkerOptions opciones = new MarkerOptions()
+                        .position(longitud_latitud)
+                        .snippet(info);
+                marcador = mapa.addMarker(opciones);
+
+
+            }catch (NullPointerException e){
+                Log.e(TAG,"Método moveCamera: Lanzo NullPointerException "+e.getMessage());
+            }
+        }else{
+            mapa.addMarker(new MarkerOptions().position(longitud_latitud));
+        }
+
+        EsconderTeclado();
+    }
     private void moveCamera(LatLng longitud_latitud, float zoom, String titulo) {
         Log.d(TAG, "moveCamera: moviendo la camara a latitud: " + longitud_latitud.latitude + ", longitud: " + longitud_latitud.longitude);
         mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(longitud_latitud, zoom));
@@ -222,7 +268,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .title(titulo);
             mapa.addMarker(opciones);
         }
-    EsconderTeclado();
+        EsconderTeclado();
     }
 
     @Override
@@ -341,37 +387,37 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             //Para prevenir de que algunas de las informaciones del lugar este null
             try{
 
-            lugar = new PlaceInfo();
+                lugar = new PlaceInfo();
 
-            lugar.setId(place.getId());                                 //id del lugar
+                lugar.setId(place.getId());                                 //id del lugar
                 Log.d(TAG, "onResult: id: "+place.getId());
-            lugar.setNombre(place.getName().toString());                //Nombre del lugar
+                lugar.setNombre(place.getName().toString());                //Nombre del lugar
                 Log.d(TAG, "onResult: nombre: "+place.getName());
             /*
             lugar.setAtributos(place.getAttributions().toString());     //atributos del lugar
                 Log.d(TAG, "onResult: atributos: "+place.getAttributions());
                 */
-            lugar.setVista(place.getViewport().toString());             //vista del lugar
+                lugar.setVista(place.getViewport().toString());             //vista del lugar
                 Log.d(TAG, "onResult: vista: "+place.getViewport());
-            lugar.setTelefono(place.getPhoneNumber().toString());       //Numero Telefono del lugar
+                lugar.setTelefono(place.getPhoneNumber().toString());       //Numero Telefono del lugar
                 Log.d(TAG, "onResult: tel: "+place.getPhoneNumber());
-            lugar.setDireccion(place.getAddress().toString());          //Direccion del lugar
+                lugar.setDireccion(place.getAddress().toString());          //Direccion del lugar
                 Log.d(TAG, "onResult: direccion: "+place.getAddress());
-            lugar.setWeb(place.getWebsiteUri());                        //Pagina Web del lugar
+                lugar.setWeb(place.getWebsiteUri());                        //Pagina Web del lugar
                 Log.d(TAG, "onResult: web: "+place.getWebsiteUri());
-            lugar.setLatlong(place.getLatLng());                        //Latitud y Longitud del lugar
+                lugar.setLatlong(place.getLatLng());                        //Latitud y Longitud del lugar
                 Log.d(TAG, "onResult: latitud, long: "+place.getLatLng());
-            lugar.setTipoLugar(place.getPlaceTypes().toString());       //Que tipo de lugar es
+                lugar.setTipoLugar(place.getPlaceTypes().toString());       //Que tipo de lugar es
                 Log.d(TAG, "onResult: tipo Lugar: "+place.getPlaceTypes());
 
-            Log.d(TAG, "onResult: Lugar: "+lugar.toString());
+                Log.d(TAG, "onResult: Lugar: "+lugar.toString());
 
             }catch(NullPointerException ex){
                 Log.d(TAG, "onResult: NullPointerExcepction: " + ex.getMessage());
             }
 
             moveCamera(new LatLng(place.getViewport().getCenter().latitude,place.getViewport().getCenter().longitude)
-                    , ZOOM, lugar.getNombre()); //movemos la camara hasta la direccion elegida
+                    , ZOOM, lugar); //movemos la camara hasta la direccion elegida
 
             places.release(); //Para prevenir perdida de memoria debemos soltar el <PlaceBuffer>
         }

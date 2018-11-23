@@ -64,5 +64,15 @@
         android:scaleType="centerCrop"
         android:src="@drawable/ic_gps"
         />
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/info_lugar"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="15dp"
+        android:scaleType="centerCrop"
+        android:layout_below="@id/layout_search"
+        android:src="@drawable/ic_info"
+        />
 
 </RelativeLayout>
