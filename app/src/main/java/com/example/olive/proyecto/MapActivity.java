@@ -16,6 +16,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,10 +24,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.olive.proyecto.modelos.PlaceInfo;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompletePrediction;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -65,7 +72,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             new LatLng(-40, -168), new LatLng(71, 136));
 
     private Boolean permisoConcedido = false;
-
     private GoogleMap mapa;
     private AutoCompletarLugares completar; //gg
 
@@ -78,6 +84,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private AutoCompleteTextView buscador;
     private ImageView gps;
 
+    private PlaceInfo lugar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -102,10 +109,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .enableAutoManage(this, this)
                 .build();
 
+        //Esto hace que cuando le de click a una de las opciones que te tira el
+        // autocompletar te lleve al lugar directamente
+        buscador.setOnItemClickListener(mAutoCompletarClickListener);
+
         //llenar el constructor con contexto, google API cliente, latitud-longitud, filtro
         completar = new AutoCompletarLugares(this, mGoogleApiClient, LAT_LNG_BOUNDS,null);
 
-        buscador.setAdapter(completar); //Le paso la referencia a la Clase AutoCompletarLugares
+        buscador.setAdapter(completar); //Le paso la referencia de la Clase AutoCompletarLugares al textView buscador
 
         buton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -136,6 +147,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
     }
 
+    //METODO GEOLOCATE
     private void geoLocate(){
         Log.d(TAG, "geoLocate: ubicandooo");
 
@@ -166,6 +178,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
+    //Metodo para adquirir la localizacion actual del dispositivo
     private void getDeviceLocation() {
         Log.d(TAG, "getDeviceLocation: Obteniendo la ubicacion del dispositivo");
         client = LocationServices.getFusedLocationProviderClient(this);
@@ -199,6 +212,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
+    //METODO PARA MOVER LA CAMARA
     private void moveCamera(LatLng longitud_latitud, float zoom, String titulo) {
         Log.d(TAG, "moveCamera: moviendo la camara a latitud: " + longitud_latitud.latitude + ", longitud: " + longitud_latitud.longitude);
         mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(longitud_latitud, zoom));
@@ -285,10 +299,81 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
     }
-    //MTETODO PARA ESCONDER EL TECLADO MIENTRAS SE MUEVE LA CAMARA
 
+    //METODO PARA ESCONDER EL TECLADO MIENTRAS SE MUEVE LA CAMARA
     private void EsconderTeclado(){
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
+
+
+    /*
+        ---------------------------- GOOGLE PLACES API: AutoCompletar Sitios------------------------------
+     */
+    //completar = mPlaceAutoCompleteAdapter
+    // Clase PlaceInfo = PlaceInfo.java
+    //METODO mAutoCompletarClickListener:
+    private AdapterView.OnItemClickListener mAutoCompletarClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            EsconderTeclado();
+
+            final AutocompletePrediction item = completar.getItem(i);
+            final String placeId = item.getPlaceId();
+
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
+                    .getPlaceById(mGoogleApiClient,placeId);
+            placeResult.setResultCallback(detalleLugaresCallback);
+        }
+    };
+
+    //Metodo para traer toda la informacion del lugar buscado
+    private ResultCallback<PlaceBuffer> detalleLugaresCallback = new ResultCallback<PlaceBuffer>() {
+        @Override
+        public void onResult(@NonNull PlaceBuffer places) {
+            if(!places.getStatus().isSuccess()){
+                Log.d(TAG, "onResult: error consultando el lugar: "+ places.getStatus().toString());
+                places.release(); //Para prevenir perdida de memoria debemos soltar el <PlaceBuffer>
+                return;
+            }
+            final Place place = places.get(0);
+
+            //Para prevenir de que algunas de las informaciones del lugar este null
+            try{
+
+            lugar = new PlaceInfo();
+
+            lugar.setId(place.getId());                                 //id del lugar
+                Log.d(TAG, "onResult: id: "+place.getId());
+            lugar.setNombre(place.getName().toString());                //Nombre del lugar
+                Log.d(TAG, "onResult: nombre: "+place.getName());
+            /*
+            lugar.setAtributos(place.getAttributions().toString());     //atributos del lugar
+                Log.d(TAG, "onResult: atributos: "+place.getAttributions());
+                */
+            lugar.setVista(place.getViewport().toString());             //vista del lugar
+                Log.d(TAG, "onResult: vista: "+place.getViewport());
+            lugar.setTelefono(place.getPhoneNumber().toString());       //Numero Telefono del lugar
+                Log.d(TAG, "onResult: tel: "+place.getPhoneNumber());
+            lugar.setDireccion(place.getAddress().toString());          //Direccion del lugar
+                Log.d(TAG, "onResult: direccion: "+place.getAddress());
+            lugar.setWeb(place.getWebsiteUri());                        //Pagina Web del lugar
+                Log.d(TAG, "onResult: web: "+place.getWebsiteUri());
+            lugar.setLatlong(place.getLatLng());                        //Latitud y Longitud del lugar
+                Log.d(TAG, "onResult: latitud, long: "+place.getLatLng());
+            lugar.setTipoLugar(place.getPlaceTypes().toString());       //Que tipo de lugar es
+                Log.d(TAG, "onResult: tipo Lugar: "+place.getPlaceTypes());
+
+            Log.d(TAG, "onResult: Lugar: "+lugar.toString());
+
+            }catch(NullPointerException ex){
+                Log.d(TAG, "onResult: NullPointerExcepction: " + ex.getMessage());
+            }
+
+            moveCamera(new LatLng(place.getViewport().getCenter().latitude,place.getViewport().getCenter().longitude)
+                    , ZOOM, lugar.getNombre()); //movemos la camara hasta la direccion elegida
+
+            places.release(); //Para prevenir perdida de memoria debemos soltar el <PlaceBuffer>
+        }
+    };
 }
