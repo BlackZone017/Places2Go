@@ -13,6 +13,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.ui.PlacePicker;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,6 +53,16 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this,MapActivity.class);
                 startActivity(intent);
+//                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+//                try {
+//                    startActivityForResult(builder.build(), 1);
+//                } catch (GooglePlayServicesRepairableException e) {
+//                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesRepairableException: "+e.getMessage());
+//                    e.printStackTrace();
+//                } catch (GooglePlayServicesNotAvailableException e) {
+//                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesNotAvailableException: "+e.getMessage());
+//                    e.printStackTrace();
+//                }
             }
         });
 

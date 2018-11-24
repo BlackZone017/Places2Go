@@ -1,9 +1,9 @@
 package com.example.olive.proyecto.modelos;
 
 import android.net.Uri;
-import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+
 
 public class PlaceInfo {
 
@@ -126,4 +126,6 @@ public class PlaceInfo {
                 ", tipoLugar='" + tipoLugar + '\'' +
                 '}';
     }
+
+
 }

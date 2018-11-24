@@ -86,7 +86,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleApiClient mGoogleApiClient;
     private static final float ZOOM = 15f;
 
-    private Button buton;
+    //private Button buton;
     private AutoCompleteTextView buscador;
     private ImageView gps,info,placepicker;
 
@@ -98,7 +98,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_map);
         buscador=findViewById(R.id.buscador);
         gps=findViewById(R.id.ic_gps);
-        buton = findViewById(R.id.button);
+        //buton = findViewById(R.id.button);
         info = findViewById(R.id.info_lugar);
         placepicker = findViewById(R.id.place_picker);
         getLocationPermission();
@@ -126,12 +126,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         buscador.setAdapter(completar); //Le paso la referencia de la Clase AutoCompletarLugares al textView buscador
 
-        buton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                geoLocate();
-            }
-        });
+//        buton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                geoLocate();
+//            }
+//        });
         buscador.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionID, KeyEvent keyEvent) {
@@ -175,21 +175,39 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onClick(View view) {
 
-
-                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-
-                try {
-                    startActivityForResult(builder.build(MapActivity.this), PLACE_PICKER_REQUEST);
-                } catch (GooglePlayServicesRepairableException e) {
-                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesRepairableException: "+e.getMessage());
-                    e.printStackTrace();
-                } catch (GooglePlayServicesNotAvailableException e) {
-                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesNotAvailableException: "+e.getMessage());
-                    e.printStackTrace();
-                }
+                //implemento el metodo cero para abrir el placepicker
+            cero();
+//                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+//
+//                try {
+//                    startActivityForResult(builder.build(MapActivity.this), PLACE_PICKER_REQUEST);
+//                } catch (GooglePlayServicesRepairableException e) {
+//                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesRepairableException: "+e.getMessage());
+//                    e.printStackTrace();
+//                } catch (GooglePlayServicesNotAvailableException e) {
+//                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesNotAvailableException: "+e.getMessage());
+//                    e.printStackTrace();
+//                }
 
             }
         });
+
+        cero();
+    }
+
+    //Abre el PlacePicker
+    public void cero(){
+        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+
+        try {
+            startActivityForResult(builder.build(MapActivity.this), PLACE_PICKER_REQUEST);
+        } catch (GooglePlayServicesRepairableException e) {
+            Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesRepairableException: "+e.getMessage());
+            e.printStackTrace();
+        } catch (GooglePlayServicesNotAvailableException e) {
+            Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesNotAvailableException: "+e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -206,7 +224,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    //METODO GEOLOCATE
+    //METODO GEOLOCATE: Localiza lo que estamos buscando
     private void geoLocate(){
         Log.d(TAG, "geoLocate: ubicandooo");
 
@@ -227,8 +245,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             Log.d(TAG, "geoLocate: Ubicacion encontrada: " + address.toString());
 
+            //nos lleva al lugar buscado
             moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), ZOOM,address.getAddressLine(0));
-
             //Toast.makeText(this,address.toString(), Toast.LENGTH_SHORT).show();
 
         }
@@ -306,6 +324,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         EsconderTeclado();
     }
     private void moveCamera(LatLng longitud_latitud, float zoom, String titulo) {
+        mapa.clear();
         Log.d(TAG, "moveCamera: moviendo la camara a latitud: " + longitud_latitud.latitude + ", longitud: " + longitud_latitud.longitude);
         mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(longitud_latitud, zoom));
         if(!titulo.equals("Mi ubicacion")){
@@ -415,7 +434,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
                     .getPlaceById(mGoogleApiClient,placeId);
             placeResult.setResultCallback(detalleLugaresCallback);
-
             EsconderTeclado();
         }
     };
