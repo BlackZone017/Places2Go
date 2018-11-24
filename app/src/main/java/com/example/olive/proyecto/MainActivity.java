@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -43,15 +44,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void init(){
 
-        Button btnMapa = findViewById(R.id.btnMapa);
-        btnMapa.setOnClickListener(new View.OnClickListener() {
+        lista = findViewById(R.id.lista);
+        lista.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this,MapActivity.class);
                 startActivity(intent);
             }
         });
-
 
     }
 

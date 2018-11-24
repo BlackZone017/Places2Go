@@ -21,7 +21,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAJlnFtDGi6nImwngXAPrJbtr6Tw0pyTys"/>
+            android:value="AIzaSyDrhRCaylvEwi1ELGYU49PiB-UDLjq9ElY"/>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
