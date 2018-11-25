@@ -25,11 +25,9 @@ public class MainActivity extends AppCompatActivity {
     private static  final int ERROR_REQUEST=9001;
 
     ListView lista;
-    String[] gustos={"SuperMercados","Cajeros","Gas Stations","Hospitales"};
-    String[] descrip={"Supermercados cercanos a tu posicion","Cajeros cercanos a tu posicion",
-            "Gasolineras cercanas a tu posicion","Hospitales cercanos a tu posicion"};
-    Integer[] images ={R.drawable.mercado,R.drawable.cajero,
-            R.drawable.gasolina,R.drawable.hospital};
+    String[] lugares={"Lugares cercanos","Buscar"};
+    String[] descrip={"Buscar todos los lugares en el mapa cercanos a tu posicion","Buscar un lugar especifico en el mapa"};
+    Integer[] images ={R.drawable.mercado,R.drawable.hospital};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         lista = findViewById(R.id.lista);
-        FormatoListview listado_gustos = new FormatoListview(this,gustos,descrip,images );
+        FormatoListview listado_gustos = new FormatoListview(this,lugares,descrip,images );
         lista.setAdapter(listado_gustos);
     }
 
@@ -52,17 +50,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this,MapActivity.class);
+                intent.putExtra("opcion",i);
                 startActivity(intent);
-//                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-//                try {
-//                    startActivityForResult(builder.build(), 1);
-//                } catch (GooglePlayServicesRepairableException e) {
-//                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesRepairableException: "+e.getMessage());
-//                    e.printStackTrace();
-//                } catch (GooglePlayServicesNotAvailableException e) {
-//                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesNotAvailableException: "+e.getMessage());
-//                    e.printStackTrace();
-//                }
             }
         });
 

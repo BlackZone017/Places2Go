@@ -177,22 +177,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 //implemento el metodo cero para abrir el placepicker
             cero();
-//                PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-//
-//                try {
-//                    startActivityForResult(builder.build(MapActivity.this), PLACE_PICKER_REQUEST);
-//                } catch (GooglePlayServicesRepairableException e) {
-//                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesRepairableException: "+e.getMessage());
-//                    e.printStackTrace();
-//                } catch (GooglePlayServicesNotAvailableException e) {
-//                    Log.d(TAG, "Problema en el onClick ---> GooglePlayServicesNotAvailableException: "+e.getMessage());
-//                    e.printStackTrace();
-//                }
 
             }
         });
 
-        cero();
+        Intent intent = getIntent();
+        int opcion = intent.getIntExtra("opcion",0);
+        Log.d(TAG, "init: POSICION TOMADA DEL LISTVIEW: "+opcion);
+        if(opcion==0){
+            cero();
+        }
     }
 
     //Abre el PlacePicker
