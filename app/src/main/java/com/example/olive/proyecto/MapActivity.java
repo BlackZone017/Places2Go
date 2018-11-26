@@ -52,6 +52,7 @@ import com.google.android.gms.tasks.Task;
 
 import java.io.IOError;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,6 +92,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private ImageView gps,info,placepicker;
 
     private PlaceInfo lugar;
+
+    private LatLng ubicacionDispositivo;
+
+    double estimatedDriveTimeInMinutes_a_pie;
+    double estimatedDriveTimeInMinutes_carro;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -176,7 +182,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onClick(View view) {
 
                 //implemento el metodo cero para abrir el placepicker
-            cero();
+                cero();
 
             }
         });
@@ -189,7 +195,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    //Abre el PlacePicker
+    //Crea el place picker, es decir el mapa con el marcador y lugares cercanos, y lo abre
     public void cero(){
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
@@ -203,6 +209,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
     }
+    /* Este método es el que se ejecuta al pulsar uno de los lugares que nos ofrece el Place Picker
+     * Consigue la informacion de el lugar desde el api de google.
+     * */
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST) {
@@ -218,7 +227,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    //METODO GEOLOCATE: Localiza lo que estamos buscando
+    /*METODO GEOLOCATE: Localiza lo que estamos buscando extrayendo la dirección del EditText y pasandosela al método
+    getfromlocation name, luego extraemos la ubicación del GeoCoder y creamos un objeto tipo Dirección, la cual se la pasaremos
+    al metodo movecamera para mover la camara hacia la dirección donde está el lugar que buscamos
+
+     */
     private void geoLocate(){
         Log.d(TAG, "geoLocate: ubicandooo");
 
@@ -249,7 +262,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    //Metodo para adquirir la localizacion actual del dispositivo
+    /*Metodo para adquirir la localizacion actual del dispositivo verificando si la aplicación tiene los permisos para
+     * acceder a la ubicación del dispositivo.*/
     private void getDeviceLocation() {
         Log.d(TAG, "getDeviceLocation: Obteniendo la ubicacion del dispositivo");
         client = LocationServices.getFusedLocationProviderClient(this);
@@ -267,6 +281,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                             moveCamera(new LatLng(ubicacion_actual.getLatitude(), ubicacion_actual.getLongitude()),
                                     ZOOM,"Mi ubicacion");
+                            obtenerLatLongDispositivo(new LatLng(ubicacion_actual.getLatitude(),ubicacion_actual.getLongitude()));
 
                         } else {
                             Log.d(TAG, "onComplete: Ubicacion no encontrada");
@@ -281,9 +296,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
 
 
+
     }
 
-    //METODO PARA MOVER LA CAMARA
+    /*Método para mover la cámara a una latitud y longitud deseada, también agrega la dirección
+     * del lugar al VentanaPersonalizadaAdapter y muestra la ventana con la información que escribimos"
+     *
+     * */
     private void moveCamera(LatLng longitud_latitud, float zoom, PlaceInfo placeInfo) {
         Log.d(TAG, "moveCamera: moviendo la camara a latitud: " + longitud_latitud.latitude + ", longitud: " + longitud_latitud.longitude);
         mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(longitud_latitud, zoom));
@@ -295,11 +314,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         if(placeInfo != null){
             try{
-                String infor = "Dirección: "+placeInfo.getDireccion()+"\n\n"+
-                        "Número de teléfono: "+placeInfo.getTelefono()+"\n\n"+
-                        "Sitio Web: "+placeInfo.getWeb()+"\n\n"+
-                        "Price Rating: "+placeInfo.getTipoLugar()+"\n\n"+
-                        "Dirección: "+placeInfo.getDireccion()+"\n\n";
+                String infor = "Dirección: "+placeInfo.getDireccion()+"\n"+
+                        "Número de teléfono: "+placeInfo.getTelefono()+"\n"+
+                        "Sitio Web: "+placeInfo.getWeb()+"\n"+
+                        /*"Price Rating: "+placeInfo.getTipoLugar()+"\n\n"+*/
+                        "Distancia del lugar: "+calculationByDistance(ubicacionDispositivo,placeInfo.getLatlong())+" km"+"\n"+
+                        "Tiempo para llegar en carro: "+estimatedDriveTimeInMinutes_carro+" min"+"\n"+
+                        "Tiempo para llegar a pie: "+estimatedDriveTimeInMinutes_a_pie+" min"+"\n";
 
                 MarkerOptions opciones = new MarkerOptions()
                         .position(longitud_latitud)
@@ -317,6 +338,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         EsconderTeclado();
     }
+
+    //El método moveCamera esta sobrecargado porque no siempre vamos a pasar el Place usando el AutoComplete
     private void moveCamera(LatLng longitud_latitud, float zoom, String titulo) {
         mapa.clear();
         Log.d(TAG, "moveCamera: moviendo la camara a latitud: " + longitud_latitud.latitude + ", longitud: " + longitud_latitud.longitude);
@@ -327,10 +350,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .title(titulo);
             mapa.addMarker(opciones);
         }
-    EsconderTeclado();
+        EsconderTeclado();
     }
 
     @Override
+    /*Inicia el mapa y nos pide permiso para accedr a nuestra localización */
     public void onMapReady(GoogleMap googleMap) {
         Toast.makeText(this, "El Mapa esta Listo", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onMapReady: Mapa esta Listo");
@@ -351,14 +375,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             EsconderTeclado();
         }
     }
-
+    // Se inicializa el mapfragment que viene del fragment que está en el xml.
     private void initMap(){
         Log.d(TAG, "initMap: Iniciando Mapa");
         SupportMapFragment mapFragment=(SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(MapActivity.this);
 
     }
-
+    /*Obtiene los permisos del dispositivo y nos envia al metodo initmap si estos son obtenidos.*/
     private void getLocationPermission(){
 
         Log.d(TAG, "getLocationPermission: Obteniendo permisos");
@@ -378,7 +402,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             ActivityCompat.requestPermissions(this,permisos,LOCATION_PERMISSION_REQUEST_CODE);
         }
     }
-
+    /* Se le da valor a la variable permisoconcedido y establece una condición para inicializar el mapa solo si los permisos
+     * son concedidos. */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.d(TAG, "onRequestPermissionsResult: llamado.");
@@ -446,30 +471,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             //Para prevenir de que algunas de las informaciones del lugar este null
             try{
 
-            lugar = new PlaceInfo();
+                lugar = new PlaceInfo();
 
-            lugar.setId(place.getId());                                 //id del lugar
+                lugar.setId(place.getId());                                 //id del lugar
                 Log.d(TAG, "onResult: id: "+place.getId());
-            lugar.setNombre(place.getName().toString());                //Nombre del lugar
+                lugar.setNombre(place.getName().toString());                //Nombre del lugar
                 Log.d(TAG, "onResult: nombre: "+place.getName());
             /*
             lugar.setAtributos(place.getAttributions().toString());     //atributos del lugar
                 Log.d(TAG, "onResult: atributos: "+place.getAttributions());
                 */
-            lugar.setVista(place.getViewport().toString());             //vista del lugar
+                lugar.setVista(place.getViewport().toString());             //vista del lugar
                 Log.d(TAG, "onResult: vista: "+place.getViewport());
-            lugar.setTelefono(place.getPhoneNumber().toString());       //Numero Telefono del lugar
+                lugar.setTelefono(place.getPhoneNumber().toString());       //Numero Telefono del lugar
                 Log.d(TAG, "onResult: tel: "+place.getPhoneNumber());
-            lugar.setDireccion(place.getAddress().toString());          //Direccion del lugar
+                lugar.setDireccion(place.getAddress().toString());          //Direccion del lugar
                 Log.d(TAG, "onResult: direccion: "+place.getAddress());
-            lugar.setWeb(place.getWebsiteUri());                        //Pagina Web del lugar
+                lugar.setWeb(place.getWebsiteUri());                        //Pagina Web del lugar
                 Log.d(TAG, "onResult: web: "+place.getWebsiteUri());
-            lugar.setLatlong(place.getLatLng());                        //Latitud y Longitud del lugar
+                lugar.setLatlong(place.getLatLng());                        //Latitud y Longitud del lugar
                 Log.d(TAG, "onResult: latitud, long: "+place.getLatLng());
-            lugar.setTipoLugar(place.getPlaceTypes().toString());       //Que tipo de lugar es
+                lugar.setTipoLugar(place.getPlaceTypes().toString());       //Que tipo de lugar es
                 Log.d(TAG, "onResult: tipo Lugar: "+place.getPlaceTypes());
 
-            Log.d(TAG, "onResult: Lugar: "+lugar.toString());
+                Log.d(TAG, "onResult: Lugar: "+lugar.toString());
 
             }catch(NullPointerException ex){
                 Log.d(TAG, "onResult: NullPointerExcepction: " + ex.getMessage());
@@ -481,4 +506,46 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             places.release(); //Para prevenir perdida de memoria debemos soltar el <PlaceBuffer>
         }
     };
+
+    public double calculationByDistance(LatLng StartP, LatLng EndP) {
+        int Radius = 6371;// radius of earth in Km
+        double lat1 = StartP.latitude;
+        double lat2 = EndP.latitude;
+        double lon1 = StartP.longitude;
+        double lon2 = EndP.longitude;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double valueResult = Radius * c;
+        double km = valueResult / 1;
+        DecimalFormat newFormat = new DecimalFormat("####");
+        double kmInDec = Double.valueOf(newFormat.format(km));
+        double meter = valueResult % 1000;
+        double meterInDec = Double.valueOf(newFormat.format(meter));
+        Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
+                + " Meter   " + meterInDec);
+        double resultado = Radius *c;
+        Log.d(TAG, "calculationByDistance: " + Math.round(resultado));
+
+        int velocidad_en_metros_a_pie = 80;
+        int velocidad_en_metros_carro = 500;
+
+        estimatedDriveTimeInMinutes_a_pie = ( Math.round(resultado)* 1000) /  velocidad_en_metros_a_pie;
+        estimatedDriveTimeInMinutes_carro = ( Math.round(resultado)* 1000) /  velocidad_en_metros_carro;
+
+        Log.d(TAG, "calculationByDistance: TIEMPO " +estimatedDriveTimeInMinutes_a_pie);
+        Log.d(TAG, "calculationByDistance: TIEMPO " +estimatedDriveTimeInMinutes_carro);
+
+        return Math.round(resultado);
+    }
+
+    public void obtenerLatLongDispositivo(LatLng latLng){
+
+        ubicacionDispositivo=latLng;
+
+    }
 }
